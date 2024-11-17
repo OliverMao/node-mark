@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Mark</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --hover-color: #45a049;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --sidebar-bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #4CAF50;
+            --hover-color: #45a049;
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --border-color: #333333;
+            --sidebar-bg: #2d2d2d;
+            --card-bg: #2d2d2d;
+            --shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: fixed;
+            height: 100vh;
+            transition: var(--transition);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-color);
+        }
+
+        #search {
+            width: 100%;
+            padding: 10px 10px 10px 35px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        #search:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .theme-switch {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .theme-switch:hover {
+            background-color: var(--hover-color);
+        }
+
+        .content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 20px;
+        }
+
+        .folder-section {
+            margin: 2rem auto;
+            max-width: 1200px;
+            padding: 0 1.5rem;
+        }
+
+        .folder-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .folder-title i {
+            color: var(--primary-color);
+            font-size: 1.75rem;
+        }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary-color);
+        }
+
+        .file-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 8px;
+        }
+
+        .file-icon i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .file-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-original {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-original i {
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 1200px) {
+            .folder-section {
+                max-width: 900px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .content {
+                margin-left: 0;
+            }
+            
+            .folder-section {
+                padding: 0 1rem;
+            }
+            
+            .file-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .folder-title {
+                font-size: 1.25rem;
+            }
+            
+            .theme-switch {
+                position: relative;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="search-container">
+                <i class="ri-search-line"></i>
+                <input type="text" id="search" placeholder="搜索文件...">
+            </div>
+            <button class="theme-switch" onclick="toggleTheme()">
+                <i class="ri-contrast-2-line"></i>
+                切换主题
+            </button>
+        </div>
+
+        <div class="content">
+            {% for folder, files in grouped_files.items() %}
+            <div class="folder-section">
+                <h2 class="folder-title">
+                    <i class="ri-folder-line"></i>
+                    {{ folder }}
+                </h2>
+                <div class="file-list">
+                    {% for file in files %}
+                    <div class="file-item" onclick="window.location.href='/view/{{ file.id }}'">
+                        <div class="file-icon">
+                            <i class="ri-file-text-line"></i>
+                        </div>
+                        <div class="file-content">
+                            <div class="file-name">{{ file.alias if file.alias else file.filename }}</div>
+                            {% if file.alias %}
+                            <div class="file-original" title="{{ file.filename }}">
+                                <i class="ri-information-line"></i>
+                                原文件名：{{ file.filename }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // 页面加载时检查主题
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+            }
+        });
+
+        // 搜索功能
+        document.getElementById('search').addEventListener('input', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            const fileItems = document.querySelectorAll('.file-item');
+            
+            fileItems.forEach(item => {
+                const fileName = item.querySelector('.file-name').textContent.toLowerCase();
+                const originalName = item.querySelector('.file-original')?.textContent.toLowerCase() || '';
+                
+                if (fileName.includes(searchText) || originalName.includes(searchText)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

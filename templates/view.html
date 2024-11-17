@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ filename }} - Markdown阅读器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --hover-color: #45a049;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --sidebar-bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+            --text-secondary: #666666;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #4CAF50;
+            --hover-color: #45a049;
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --border-color: #333333;
+            --sidebar-bg: #2d2d2d;
+            --card-bg: #2d2d2d;
+            --shadow: 0 2px 4px rgba(0,0,0,0.3);
+            --text-secondary: #999999;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .left-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background-color: var(--card-bg);
+        }
+
+        .back-button:hover {
+            background-color: var(--hover-color);
+            transform: translateY(-1px);
+        }
+
+        .back-button i {
+            margin-right: 8px;
+        }
+
+        .file-path {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .file-path i {
+            margin: 0 8px;
+            font-size: 12px;
+        }
+
+        .path-segment {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: var(--card-bg);
+            margin: 0 4px;
+        }
+
+        .markdown-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .markdown-content {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        /* 代码块样式 */
+        pre {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        code {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 14px;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--card-bg);
+            font-weight: 600;
+        }
+
+        /* 引用样式 */
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            margin: 20px 0;
+            padding: 12px 24px;
+            background-color: var(--bg-color);
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .left-section {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .file-path {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .markdown-content {
+                padding: 20px;
+            }
+        }
+
+        .file-info {
+            padding: 2rem 20px;
+            background: var(--bg-color);
+        }
+
+        .file-info-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .file-info h3 {
+            margin: 0 0 1.5rem 0;
+            color: var(--text-color);
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-info h3 i {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+        }
+
+        .file-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-card {
+            padding: 1.25rem;
+            background: var(--bg-color);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-label i {
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: var(--text-color);
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        /* 响应式设计优化 */
+        @media (max-width: 1400px) {
+            .file-info-content {
+                max-width: 1000px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .file-info-content {
+                max-width: 800px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .file-info-content {
+                padding: 1.5rem;
+            }
+            
+            .file-info-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .info-card {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .file-info {
+                padding: 1rem 10px;
+            }
+            
+            .file-info-content {
+                padding: 1rem;
+            }
+            
+            .info-label {
+                font-size: 0.8rem;
+            }
+            
+            .info-value {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="left-section">
+                <a href="/" class="back-button">
+                    <i class="ri-arrow-left-line"></i>
+                    返回列表
+                </a>
+                <div class="file-path">
+                    <span class="path-segment">
+                        <i class="ri-folder-line"></i>
+                        {{ folder_name }}
+                    </span>
+                    <i class="ri-arrow-right-s-line"></i>
+                    <span class="path-segment">
+                        <i class="ri-markdown-line"></i>
+                        {{ filename }}
+                    </span>
+                </div>
+            </div>
+            <button class="theme-switch" onclick="toggleTheme()">
+                <i class="ri-contrast-2-line"></i>
+            </button>
+        </div>
+    </div>
+    <div class="markdown-container">
+        <div class="markdown-content">
+            {{ content | safe }}
+        </div>
+    </div>
+    <div class="file-info">
+        <div class="file-info-content">
+            <h3>
+                <i class="ri-file-info-line"></i>
+                文档信息
+            </h3>
+            <div class="file-info-grid">
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="ri-file-text-line"></i>
+                        文件名
+                    </div>
+                    <div class="info-value">{{ filename }}</div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="ri-folder-line"></i>
+                        所在目录
+                    </div>
+                    <div class="info-value">{{ folder_name }}</div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="ri-route-line"></i>
+                        完整路径
+                    </div>
+                    <div class="info-value">{{ file_info.path }}</div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="ri-hard-drive-line"></i>
+                        文件大小
+                    </div>
+                    <div class="info-value">{{ file_info.size }}</div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="ri-time-line"></i>
+                        创建时间
+                    </div>
+                    <div class="info-value">{{ file_info.created_time }}</div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-label">
+                        <i class="ri-edit-2-line"></i>
+                        修改时间
+                    </div>
+                    <div class="info-value">{{ file_info.modified_time }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
