@@ -1,0 +1,1 @@
+powershell -WindowStyle Hidden -Command "python D:\code_project\node-mark\app.py"
