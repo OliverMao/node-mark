@@ -4,8 +4,9 @@
     <title>{{ filename }} - Markdown阅读器</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/remixicon.css') }}">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet"> -->
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"> -->
     <style>
         :root {
             --primary-color: #4CAF50;
@@ -16,7 +17,7 @@
             --sidebar-bg: #f5f5f5;
             --card-bg: #ffffff;
             --shadow: 0 2px 4px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
+            /* --transition: all 0.3s ease; */
             --text-secondary: #666666;
         }
 

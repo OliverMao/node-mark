@@ -7,9 +7,6 @@ import threading
 import os
 import yaml
 import glob
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-from pathlib import Path
 import hashlib
 from datetime import datetime
 import uuid
@@ -20,10 +17,6 @@ app = Flask(__name__)
 markdown_files = {}
 file_id_mapping = {}  # 新增：存储文件ID和文件名的映射
 
-class MarkdownFileHandler(FileSystemEventHandler):
-    def on_modified(self, event):
-        if event.src_path.endswith('.md'):
-            update_markdown_file(event.src_path)
 
 def generate_file_id(filepath):
     """生成唯一的文件ID"""
