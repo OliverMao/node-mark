@@ -4,7 +4,7 @@ folders:
       alias: "openim安装"
   个人笔记:
     - path: "D:/notes/*.md"
-    - path: "C:/Users/69599/Desktop/双目测距/code/Hello.md"
+    - path: "C:\Users\69599\Desktop\双目测距\T1.md"
       alias: "双目测距笔记"
   学习资料:
     - path: "D:/notes/*.md"

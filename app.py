@@ -38,33 +38,6 @@ def parse_path_and_alias(path_config):
     # 如果是字符串形式（无别名）
     return path_config, None
 
-def load_markdown_files():
-    markdown_files.clear()
-    with open('config.yaml', 'r', encoding='utf-8') as f:
-        config = yaml.safe_load(f)
-    
-    for folder_name, paths in config['folders'].items():
-        for path_config in paths:
-            # 获取路径和别名
-            if isinstance(path_config, dict):
-                path = path_config['path']
-                alias = path_config.get('alias')  # 使用get方法，如果没有alias则返回None
-            else:
-                path = path_config
-                alias = None
-            
-            # 移除可能的引号
-            path = path.strip('"\'')
-            
-            if '*' in path:
-                # 处理通配符情况
-                dir_path = os.path.dirname(path)
-                pattern = os.path.basename(path)
-                for file in glob.glob(os.path.join(dir_path, pattern)):
-                    update_markdown_file(file, folder_name)
-            else:
-                # 处理单个文件情况
-                update_markdown_file(path, folder_name, alias)
 
 def update_markdown_file(filepath, folder_name, alias=None):
     try:
@@ -91,12 +64,10 @@ def update_markdown_file(filepath, folder_name, alias=None):
 def read_markdown_files():
     markdown_files.clear()
     file_id_mapping.clear()
-
-    """从配置文件读取并监控Markdown文件"""
+    """从配置文件读取Markdown文件"""
     with open('config.yaml', 'r', encoding='utf-8') as f:
-        config = yaml.safe_load(f)
-
-    # observer = Observer()
+        config_content = f.read().replace('\\', '/')
+        config = yaml.safe_load(config_content)  
     
     for folder_name, patterns in config['folders'].items():
         for pattern in patterns:
@@ -107,7 +78,8 @@ def read_markdown_files():
             else:
                 path = pattern
                 alias = None
-                
+            # 将路径中的反斜杠替换为正斜杠
+            
             # 读取现有的markdown文件
             try:
                 if '*' in path:
