@@ -2,6 +2,7 @@ folders:
   工作文档:
     - path: "D:/code_project/2024-6-29 学苑市井/实时通讯/server/install.md"
       alias: "openim安装"
+    - path: "D:\code_project\雷池SafeLine\配置SSL.md"
   个人笔记:
     - path: "D:/notes/*.md"
     - path: "C:\Users\69599\Desktop\双目测距\T1.md"

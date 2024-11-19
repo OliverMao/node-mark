@@ -1,7 +1,7 @@
 import pystray
 from PIL import Image
 import webbrowser
-from flask import Flask, render_template
+from flask import Flask, render_template, request, send_file
 import mistune
 import threading
 import os
@@ -166,6 +166,43 @@ def main():
     # 创建和运行系统托盘图标
     icon = create_tray_icon()
     icon.run()
+
+def replace_image_paths(content, file_path):
+    if not file_path:
+        return content
+        
+    # 获取当前文件所在目录的路径
+    current_file_dir = os.path.dirname(file_path)
+    print('current_file_dir', current_file_dir)
+    # 替换图片标签中的src属性
+    def replace_path(match):
+        img_path = match.group(1)
+        print('img_path', img_path)
+        if img_path.startswith('./'):
+            img_path = img_path[2:]
+            now_img_path = os.path.join(current_file_dir, img_path)
+            # 创建用于访问图片的URL
+            url = f'/api/image?path={now_img_path}'
+            return f'<img src="{url}"'
+        return f'<img src="{img_path}"'
+    
+    # 使用正则表达式替换图片路径
+    import re
+    pattern = r'<img src="([^"]+)"'
+    result =  re.sub(pattern, replace_path, content)
+    print('result', result)
+    return result
+
+# 注册自定义过滤器
+app.jinja_env.filters['replace_image_paths'] = replace_image_paths
+
+# 添加图片访问的路由
+@app.route('/api/image')
+def get_image():
+    image_path = request.args.get('path')
+    if os.path.exists(image_path):
+        return send_file(image_path)
+    return '图片不存在', 404
 
 if __name__ == '__main__':
     main() 
