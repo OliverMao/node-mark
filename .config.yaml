@@ -1,0 +1,8 @@
+folders:
+  工作文档:
+    - path: "E:/notes/*.md"
+  个人笔记:
+    - path: "D:/notes/*.md"
+  学习资料:
+    - path: "D:/study/*.md"
+    
