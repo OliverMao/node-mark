@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置编辑器</title>
+    <!-- 引入 CodeMirror -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/codemirror.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/monokai.min.css') }}">
+    <script src="{{ url_for('static', filename='js/codemirror.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/yaml.min.js') }}"></script>
+    <!-- 引入 YAML 解析库 -->
+    <script src="{{ url_for('static', filename='js/js-yaml.min.js') }}"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+            padding: 20px;
+        }
+        .editor-container, .visual-container {
+            flex: 1;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        h2 {
+            margin: 0 0 20px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        .CodeMirror {
+            height: 700px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #4caf4fce;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .form-group {
+            margin-bottom: 20px;
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .toolbar {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .toolbar select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        .toolbar select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .template-btn {
+            background: #4b5563;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .template-btn:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- YAML 文本编辑器 -->
+        <div class="editor-container">
+            <h2>YAML 编辑器</h2>
+            <div class="toolbar">
+                <select id="fontFamily">
+                    <!-- 微软雅黑 -->
+                    <option value="'Fira Code', monospace">Fira Code</option>
+                    <option value="'Microsoft YaHei', monospace">微软雅黑</option>
+                    
+                    <option value="'Consolas', monospace">Consolas</option>
+                    <option value="'PingFang SC', monospace">PingFang SC</option>
+                    <option value="'FangSong', monospace">仿宋</option>                    
+                </select>
+                <select id="fontSize">
+                    <option value="12">12px</option>
+                    <option value="14" selected>14px</option>
+                    <option value="16">16px</option>
+                    <option value="18">18px</option>
+                    <option value="20">20px</option>
+                </select>
+                <button type="button" class="template-btn" id="loadTemplate">加载模板</button>
+                <button type="button" class="template-btn" onclick="window.location.href='/'">返回首页</button>
+            </div>
+            <form id="configForm" method="POST">
+                <textarea id="editor" name="config">{{ config }}</textarea>
+                <button type="submit" class="btn">保存配置</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+        // 初始化 CodeMirror
+        var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+            mode: "yaml",
+            theme: "monokai",
+            lineNumbers: true,
+            indentUnit: 2,
+            smartIndent: true,
+            lineWrapping: true,
+            foldGutter: true,
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+            extraKeys: {
+                "Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); },
+                "Ctrl-S": function(cm) {
+                    // 阻止浏览器默认的保存行为
+                    event.preventDefault();
+                    // 触发保存操作
+                    saveConfig();
+                }
+            },
+            foldGutter: true,
+            matchBrackets: true,
+            autoCloseBrackets: true
+        });
+
+        // YAML 变更时更新可视化编辑器
+        editor.on("change", function() {
+            try {
+                const yamlContent = editor.getValue();
+                const data = jsyaml.load(yamlContent);
+                updateVisualEditor(data);
+            } catch (e) {
+                console.error("YAML 解析错误:", e);
+            }
+        });
+
+        // 更新可视化编辑器
+        function updateVisualEditor(data, parentKey = '') {
+            const visualEditor = document.getElementById('visualEditor');
+            visualEditor.innerHTML = '';
+            
+            Object.entries(data).forEach(([key, value]) => {
+                const fullKey = parentKey ? `${parentKey}.${key}` : key;
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = key;
+                formGroup.appendChild(label);
+
+                if (typeof value === 'object' && value !== null) {
+                    // 递归处理嵌套对象
+                    const nestedDiv = document.createElement('div');
+                    nestedDiv.style.marginLeft = '20px';
+                    formGroup.appendChild(nestedDiv);
+                    updateVisualEditor(value, fullKey);
+                } else {
+                    // 创建输入框
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = value;
+                    input.dataset.key = fullKey;
+                    input.addEventListener('change', function() {
+                        updateYamlValue(this.dataset.key, this.value);
+                    });
+                    formGroup.appendChild(input);
+                }
+                
+                visualEditor.appendChild(formGroup);
+            });
+        }
+
+        // 更新 YAML 内容
+        function updateYamlValue(path, value) {
+            try {
+                const yamlContent = editor.getValue();
+                let data = jsyaml.load(yamlContent);
+                
+                // 更新指定路径的值
+                const keys = path.split('.');
+                let current = data;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    current = current[keys[i]];
+                }
+                current[keys[keys.length - 1]] = value;
+                
+                // 更新编辑器内容，配置 dump 选项
+                editor.setValue(jsyaml.dump(data, {
+                    lineWidth: -1,  // 禁用自动换行
+                    noRefs: true,   // 避免引用标记
+                    indent: 2       // 保持2空格缩进
+                }));
+            } catch (e) {
+                console.error("更新 YAML 失败:", e);
+            }
+        }
+
+        // 默认模板
+        const defaultTemplate = `
+folders:
+  工作文档:
+    - path: "D:/code_project/server/install.md"
+      alias: "openim安装"
+    - path: "D:/code_project/配置SSL.md"
+  个人笔记:
+    - path: "D:/notes/*.md"
+    - path: "C:/Users/Desktop/T1.md"
+      alias: "笔记"
+    - path: "D:/code_project/KVM/KVM.md"
+  学习资料:
+    - path: "D:/study/*.md"
+    
+`;
+
+        // 字体选择
+        document.getElementById('fontFamily').addEventListener('change', function() {
+            const editor = document.querySelector('.CodeMirror');
+            editor.style.fontFamily = this.value;
+        });
+
+        // 字体大小选择
+        document.getElementById('fontSize').addEventListener('change', function() {
+            const editor = document.querySelector('.CodeMirror');
+            editor.style.fontSize = this.value + 'px';
+        });
+
+        // 加载模板按钮
+        document.getElementById('loadTemplate').addEventListener('click', function() {
+            if (confirm('确定要加载默认模板吗？这将覆盖当前内容。')) {
+                editor.setValue(defaultTemplate);
+            }
+        });
+
+        // 设置初始字体和大小
+        document.querySelector('.CodeMirror').style.fontFamily = document.getElementById('fontFamily').value;
+        document.querySelector('.CodeMirror').style.fontSize = document.getElementById('fontSize').value + 'px';
+
+        // 添加保存配置函数
+        function saveConfig() {
+            const formData = new FormData();
+            formData.append('config', editor.getValue());
+            
+            fetch('/config', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                alert('配置已保存成功！');
+                window.location.href = '/';
+            })
+            .catch(error => {
+                alert('保存失败：' + error.message);
+            });
+        }
+
+        // 修改表单提交处理，使用saveConfig函数
+        document.getElementById('configForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveConfig();
+        });
+    </script>
+</body>
+
+</html>

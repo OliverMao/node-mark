@@ -11,8 +11,9 @@ import hashlib
 from datetime import datetime
 import uuid
 
+# 从.env文件中读取HOST
+HOST = os.getenv('HOST', 'http://localhost:5000')
 app = Flask(__name__)
-
 # 存储链接和内容的字典
 markdown_files = {}
 file_id_mapping = {}  # 新增：存储文件ID和文件名的映射
@@ -72,7 +73,7 @@ def read_markdown_files():
                 path = pattern
                 alias = None
             # 将路径中的反斜杠替换为正斜杠
-            
+            path = path.replace('\\', '/')
             # 读取现有的markdown文件
             try:
                 if '*' in path:
@@ -129,10 +130,42 @@ def view_markdown(file_id):
                              })
     return "文件不存在"
 
+@app.route('/config', methods=['GET', 'POST'])
+def config_page():
+    """显示和保存配置页面"""
+    if request.method == 'POST':
+        try:
+            # 获取提交的配置内容
+            new_config = request.form.get('config')
+            # 将路径中的反斜杠替换为正斜杠
+            new_config = new_config.replace('\\', '/')
+            # 验证YAML格式是否正确
+            yaml.safe_load(new_config)
+            
+            # 写入配置文件
+            with open('config.yaml', 'w', encoding='utf-8') as f:
+                f.write(new_config)
+            
+            # 重新读取markdown文件
+            read_markdown_files()
+            
+            return '配置已保存', 200
+        except yaml.YAMLError as e:
+            return f'YAML格式错误: {str(e)}', 400
+        except Exception as e:
+            return f'保存配置失败: {str(e)}', 500
+    
+    # GET请求处理
+    with open('config.yaml', 'r', encoding='utf-8') as f:
+        config = f.read()
+        # 去除所有空白行
+        config = '\n'.join([line for line in config.split('\n') if line.strip()])
+    return render_template('config.html', config=config)
+
 def create_tray_icon():
     """创建系统托盘图标"""
     # 使用更好看的图标（这里使用一个简单的示例，你可以替换为自己的图标文件）
-    icon_path = "icon.png"  # 确保这个文件存在
+    icon_path = "logo_100.png"  # 确保这个文件存在
     if os.path.exists(icon_path):
         image = Image.open(icon_path)
     else:
@@ -147,25 +180,46 @@ def create_tray_icon():
                     255
                 )
     
-    def on_clicked(icon, item):
-        webbrowser.open('http://localhost:5000')
+    def on_clicked(path):
+        def _handler():  # 创建一个内部处理函数
+            if path:
+                webbrowser.open(HOST + '/' + path)
+            else:
+                webbrowser.open(HOST)
+        return _handler  # 返回处理函数而不是直接执行
 
     icon = pystray.Icon("markdown_reader", image, "Markdown阅读器", menu=pystray.Menu(
-        pystray.MenuItem("打开", on_clicked),
+        pystray.MenuItem("打开", on_clicked('')),
+        pystray.MenuItem("编辑", on_clicked('config')),
         pystray.MenuItem("退出", lambda: icon.stop())
     ))
+
+    # 立即打开
+    on_clicked('')()
+
     return icon
 
 def main():
     # 读取链接文件
     read_markdown_files()
     
+    # 生产模式
     # 在新线程中启动Flask服务器
     threading.Thread(target=app.run, daemon=True).start()
     
     # 创建和运行系统托盘图标
     icon = create_tray_icon()
     icon.run()
+
+    # DEBUG模式
+    # # 创建和运行系统托盘图标（在新线程中运行）
+    # icon = create_tray_icon()
+    # threading.Thread(target=icon.run, daemon=True).start()
+    
+    # # 在主线程中运行Flask应用
+    # app.run(debug=True) 
+
+    
 
 def replace_image_paths(content, file_path):
     if not file_path:

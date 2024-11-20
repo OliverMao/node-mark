@@ -245,6 +245,44 @@
                 bottom: 0;
             }
         }
+
+        .config-button {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .config-button:hover {
+            background-color: var(--sidebar-bg);
+            border-color: var(--primary-color);
+        }
+
+        .config-button i {
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .config-button {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                right: auto;
+                margin-top: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -254,6 +292,12 @@
                 <i class="ri-search-line"></i>
                 <input type="text" id="search" placeholder="搜索文件...">
             </div>
+            
+            <button class="config-button" onclick="window.location.href='/config'">
+                <i class="ri-settings-3-line"></i>
+                编辑配置
+            </button>
+            
             <button class="theme-switch" onclick="toggleTheme()">
                 <i class="ri-contrast-2-line"></i>
                 切换主题
