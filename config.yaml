@@ -7,5 +7,10 @@ folders:
     - path: "D:/notes/*.md"
     - path: "C:\Users\69599\Desktop\双目测距\T1.md"
       alias: "双目测距笔记"
+    - path: "D:\code_project\KVM\创建KVM虚拟机.md"
+    - path: "D:\code_project\KVM\虚拟机内部更改存储.md"
+      alias: "虚拟机存储分配不正确的解决方案"
+    
   学习资料:
     - path: "D:/study/*.md"
+    
