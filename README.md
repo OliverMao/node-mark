@@ -1,7 +1,7 @@
 
 
 <div align="center"><a href="https://github.com/OliverMao/node-mark" ><img width="300" src="./logo.png" alt="logo.png" border="0" /></a>
-<h1> 📦 node-mark - 散点Markdown文档阅读器</h1><div><a href="https://github.com/OliverMao/node-mark" ><img  src="https://img.shields.io/badge/license-MIT-License-blue.svg" alt="license" border="0" /></a>
+<h1> 📦 node-mark - 散点Markdown文档阅读器</h1><div><a href="https://github.com/OliverMao/node-mark" ><img  src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license" border="0" /></a>
   <img  src="https://img.shields.io/github/stars/OliverMao/node-mark.svg" alt="stars" border="0" />
   <img  src="https://img.shields.io/github/forks/OliverMao/node-mark.svg" alt="forks" border="0" />
   <img  src="https://img.shields.io/badge/version-0.1.6-686480r.svg" alt="forks" border="0" />
