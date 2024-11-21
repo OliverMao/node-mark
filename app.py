@@ -41,7 +41,11 @@ def update_markdown_file(filepath, folder_name, alias=None):
         if filepath.startswith('http'):
             response = requests.get(filepath)
             content = response.text
-            temp_file_path = os.path.join('static', 'temp', os.path.basename(filepath))
+            # 判断/static/temp/目录是否存在，不存在则创建
+            temp_dir = os.path.join('static', 'temp')
+            if not os.path.exists(temp_dir):
+                os.makedirs(temp_dir)
+            temp_file_path = os.path.join(temp_dir, os.path.basename(filepath))
             with open(temp_file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             filepath = temp_file_path
