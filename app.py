@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, send_file
 import mistune
 import threading
 import os
+import requests
 import yaml
 import glob
 import hashlib
@@ -35,6 +36,15 @@ def parse_path_and_alias(path_config):
 
 def update_markdown_file(filepath, folder_name, alias=None):
     try:
+        # 如果是http的链接，则下载链接内容到/static/temp/目录下
+        normal_filepath = filepath
+        if filepath.startswith('http'):
+            response = requests.get(filepath)
+            content = response.text
+            temp_file_path = os.path.join('static', 'temp', os.path.basename(filepath))
+            with open(temp_file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            filepath = temp_file_path
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
         
@@ -44,7 +54,7 @@ def update_markdown_file(filepath, folder_name, alias=None):
         
         markdown_files[file_id] = {
             'content': mistune.html(content),
-            'path': filepath,
+            'path': normal_filepath,
             'folder': folder_name,
             'filename': filename,
             'alias': alias,  # 添加别名字段
